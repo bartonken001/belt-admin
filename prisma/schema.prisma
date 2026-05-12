@@ -1,0 +1,268 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  name      String?
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique
+  description String?
+  image       String?
+  parentId    String?
+  parent      Category?  @relation("ParentChild", fields: [parentId], references: [id])
+  children    Category[] @relation("ParentChild")
+  products    Product[]
+  sortOrder   Int        @default(0)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Product {
+  id             String        @id @default(uuid())
+  title          String
+  handle         String        @unique
+  description    String
+  price          Float
+  compareAtPrice Float?
+  cost           Float?
+  sku            String?
+  barcode        String?
+  stock          Int           @default(0)
+  images         String?
+  type           String
+  tags           String?
+  isActive       Boolean       @default(true)
+  isFeatured     Boolean       @default(false)
+  weight         Float?
+  dimensions     String?
+  categoryId     String?
+  category       Category?      @relation(fields: [categoryId], references: [id])
+  orderItems     OrderItem[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Customer {
+  id         String    @id @default(uuid())
+  email      String    @unique
+  name       String?
+  phone      String?
+  password   String?
+  orders     Order[]
+  addresses  Address[]
+  wishlists  String?
+  notes      String?
+  totalSpent Float     @default(0)
+  orderCount Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  name       String
+  phone      String
+  street     String
+  city       String
+  state      String
+  zip        String
+  country    String   @default("US")
+  isDefault  Boolean @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Order {
+  id               String         @id @default(uuid())
+  orderNumber      String        @unique
+  customerId       String?
+  customer         Customer?     @relation(fields: [customerId], references: [id])
+  email            String
+  name             String
+  phone            String
+  shippingAddress  String
+  billingAddress   String?
+  subtotal         Float
+  shippingCost     Float         @default(0)
+  tax              Float         @default(0)
+  discount         Float         @default(0)
+  total            Float
+  status           String        @default("pending")
+  paymentStatus    String        @default("pending")
+  paymentMethod    String?
+  shippingMethod   String?
+  trackingNumber   String?
+  trackingUrl      String?
+  notes            String?
+  items            OrderItem[]
+  timeline         OrderTimeline[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  title     String
+  price     Float
+  quantity  Int
+  total     Float
+  options   String?
+  createdAt DateTime @default(now())
+}
+
+model OrderTimeline {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  status    String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model Shipment {
+  id              String    @id @default(uuid())
+  orderId         String
+  carrier         String
+  trackingNumber String
+  trackingUrl     String?
+  status          String    @default("pending")
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime  @default(now())
+}
+
+model FinanceAccount {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  type       String
+  balance    Float    @default(0)
+  currency   String   @default("USD")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model FinanceTransaction {
+  id            String   @id @default(uuid())
+  type          String
+  amount        Float
+  currency      String   @default("USD")
+  description   String
+  category      String?
+  referenceType String?
+  referenceId   String?
+  accountId     String
+  createdBy     String
+  createdAt     DateTime @default(now())
+}
+
+model Withdrawal {
+  id           String    @id @default(uuid())
+  customerId   String
+  accountType  String
+  accountInfo  String
+  amount       Float
+  fee          Float     @default(0)
+  actualAmount Float
+  status       String    @default("pending")
+  note         String?
+  processedAt  DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+model ChatMessage {
+  id            String   @id @default(uuid())
+  sessionId     String
+  session       ChatSession @relation(fields: [sessionId], references: [id])
+  customerId    String?
+  customerName  String?
+  customerEmail String?
+  message       String
+  isFromAdmin   Boolean  @default(false)
+  isAI          Boolean  @default(false)
+  sentiment     String?
+  rating        Int?
+  readAt        DateTime?
+  createdAt     DateTime @default(now())
+}
+
+model ChatSession {
+  id            String        @id @default(uuid())
+  customerId    String?
+  customerName  String?
+  customerEmail String?
+  status        String       @default("active")
+  lastMessage   String?
+  unreadCount   Int          @default(0)
+  messages      ChatMessage[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model MarketingPromotion {
+  id          String   @id @default(uuid())
+  name        String
+  type        String
+  code        String?
+  value       Float?
+  minPurchase Float?
+  maxDiscount Float?
+  startsAt    DateTime
+  endsAt      DateTime
+  usageLimit  Int?
+  usageCount  Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model WebsiteConfig {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  type      String   @default("text")
+  group     String   @default("general")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteContact {
+  id        String   @id @default(uuid())
+  type      String   @unique
+  label     String
+  value     String
+  isPublic  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Log {
+  id         String   @id @default(uuid())
+  action     String
+  entityType String?
+  entityId   String?
+  adminId    String?
+  details    String?
+  ip         String?
+  createdAt  DateTime @default(now())
+}
