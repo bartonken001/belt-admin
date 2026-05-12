@@ -91,7 +91,7 @@ router.post('/sessions/:id/ai-reply', async (req, res) => {
     if (!session) return res.status(404).json({ error: 'Session not found' })
 
     // Build context for AI
-    const contextMessages = session.messages.map(m => ({
+    const contextMessages: Array<{ role: 'assistant' | 'user'; content: string }> = session.messages.map(m => ({
       role: m.isFromAdmin ? 'assistant' : 'user',
       content: m.message
     }))
