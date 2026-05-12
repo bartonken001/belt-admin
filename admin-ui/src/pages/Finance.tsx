@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Card, Statistic, Table, message } from 'antd'
-import { DollarSign, TrendingUp, CreditCard, Wallet } from 'lucide-react'
+import { DollarSign, TrendingUp, Wallet } from 'lucide-react'
 import api from '../api'
 
 export default function Finance() {

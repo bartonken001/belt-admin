@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Table, Button, Modal, Form, Input, message, Tag, Timeline, InputNumber } from 'antd'
-import { Eye, Truck, CheckCircle } from 'lucide-react'
+import { Table, Button, Modal, Form, Input, message, Tag } from 'antd'
+import { Eye, Truck } from 'lucide-react'
 import api from '../api'
 import type { Order } from '../types'
 
