@@ -1,0 +1,9 @@
+{
+  "build": {
+    "command": "npm run build",
+    "artifact": "dist"
+  },
+  "run": {
+    "command": "npm start"
+  }
+}
